@@ -6,9 +6,26 @@ module.exports = app => {
   // Your code here
   app.log('Yay, the app was loaded!')
 
-  app.on('issues.opened', async context => {
-    const issueComment = context.issue({ body: 'Thanks for opening this issue!' })
-    return context.github.issues.createComment(issueComment)
+  app.on('issue_comment.created', async context => {
+    var executeTest = true
+    const labels = context.payload.issue.labels
+    const issues = context.github.issues
+    for (var index in labels) {
+      if (labels[index].name == 'テストしない') {
+        executeTest = false
+        break
+      }
+    }
+    const commentBody = context.payload.comment.body
+    if (commentBody == "test start") {
+      if (executeTest == true){
+        const prComment = context.issue({ body: 'ここでTest開始するよ' })
+        return issues.createComment(prComment)
+      } else {
+        const prComment = context.issue({ body: '今はTest開始できないよ' })
+        return issues.createComment(prComment)
+      }
+    }
   })
 
   // For more information on building apps:
